@@ -1,7 +1,7 @@
 {
   "name": "mattoz-music-player",
   "productName": "MATTOZ MUSIC PLAYER",
-  "version": "0.9.0-preview.17",
+  "version": "0.9.0-preview.18",
   "description": "MATTOZ — Fase 9 em desenvolvimento",
   "private": true,
   "main": "src/main/main.cjs",

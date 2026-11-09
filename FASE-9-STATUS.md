@@ -1,3 +1,9 @@
+# Prévia 18 — Playlists, visual e atualizações
+
+Busca de playlists por título/artista/álbum sem acentos, seleção de resultados e feedback de arraste. Início com saudação e atalhos, ajustes na tela cheia e MiniPlayer. Download interno com progresso, cancelamento, tamanho e SHA-256, abertura explícita e tratamento do portátil. O motor de áudio não mudou. Validação local: 79 testes e cenário Electron de áudio/LRC; compilação Windows pelo GitHub Actions.
+
+---
+
 # Prévia 16 — Coleção pessoal
 
 Busca nas letras salvas com resultados clicáveis, marcadores de momentos e cápsula mensal com geração de playlist. Nova tela Minha coleção, atalho no Início e coração no rodapé. Dados incluídos no backup local. 64 testes automatizados passaram. Cenário no Electron verificou salvar e tocar o marcador, tocar o timestamp encontrado na busca e gerar a playlist mensal pela interface.

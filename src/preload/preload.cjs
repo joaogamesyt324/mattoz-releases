@@ -4,6 +4,9 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 contextBridge.exposeInMainWorld('mattoz', Object.freeze({
   checkRelease: ()=>ipcRenderer.invoke('updates:check'),
   downloadRelease: ()=>ipcRenderer.invoke('updates:download'),
+  cancelRelease: ()=>ipcRenderer.invoke('updates:cancel'),
+  openRelease: ()=>ipcRenderer.invoke('updates:open'),
+  onUpdateProgress: fn=>{const listener=(_event,data)=>fn(data);ipcRenderer.on('updates:progress',listener);return ()=>ipcRenderer.removeListener('updates:progress',listener);},
   onLauncher: fn=>{const listener=()=>fn();ipcRenderer.on('launcher:show',listener);return ()=>ipcRenderer.removeListener('launcher:show',listener);},
   desktopSettings: enabled=>ipcRenderer.invoke('desktop:settings',enabled),
   desktopState: state=>ipcRenderer.invoke('desktop:state',state),

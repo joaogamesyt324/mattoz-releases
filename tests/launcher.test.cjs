@@ -10,7 +10,7 @@ test('launcher handles checking, ahead, empty, errors and manual download',async
    await new Promise(r=>setTimeout(r,0));const button=[...w.document.querySelectorAll('button')].find(b=>b.textContent==='Consultar atualização');
    button.click();a.equal(button.disabled,true);await new Promise(r=>setTimeout(r,0));a.equal(button.disabled,false);
    const status=w.document.querySelector('[role=status]').textContent;
-   if(result.status==='available'){a.match(status,/navegador/);button.click();await new Promise(r=>setTimeout(r,0));a.equal(downloads,1);}
+   if(result.status==='available'){a.match(status,/SHA-256/);button.click();await new Promise(r=>setTimeout(r,0));a.equal(downloads,1);}
    else{a.equal(downloads,0);a.match(status,result instanceof Error?/Limite/:result.status==='ahead'?/mais recente que/:result.status==='empty'?/Ainda não/:/mais recente/);}
   }finally{w.close();}
  }

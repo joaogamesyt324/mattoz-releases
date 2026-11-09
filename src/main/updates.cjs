@@ -62,24 +62,39 @@ async function checkGitHubRelease(config,current,variant,fetcher) {
   const expected=`https://github.com/${config.owner}/${config.repository}/releases/download/${encodeURIComponent(release.tag_name)}/${file}`;
   const asset=release.assets?.find(a=>a.name===file);
   if(!asset||asset.state!=='uploaded'||!Number.isSafeInteger(asset.size)||asset.size<=0||asset.size>2*1024**3||asset.browser_download_url!==expected||!/^sha256:[a-f0-9]{64}$/i.test(asset.digest||''))throw Error('A nova versão ainda não tem um pacote válido para esta edição do MATTOZ. Tente novamente mais tarde.');
-  return {status:'available',version,url:expected,sha256:asset.digest.slice(7).toLowerCase()};
+  return {status:'available',version,url:expected,size:asset.size,sha256:asset.digest.slice(7).toLowerCase()};
 }
 function registerUpdates({app,ipcMain,net,shell,getWindow,assertTrustedSender}){
-  let download=null,sequence=0;
+  let download=null,sequence=0,controller=null,verified=null;
+  const {downloadVerified,checksum}=require('./update-download.cjs');
   ipcMain.handle('updates:check',async event=>{
-    assertTrustedSender(event,getWindow());download=null;const request=++sequence;
+    assertTrustedSender(event,getWindow());if(controller)throw Error('Aguarde ou cancele o download atual.');download=null;const request=++sequence;
     const variant=process.env.PORTABLE_EXECUTABLE_DIR?'portable':'setup';
     const fetcher=(url,options)=>net.fetch(url,options);
     const release=feed.type==='github'
       ?await checkGitHubRelease(feed,app.getVersion(),variant,fetcher)
       :await checkRelease(feed.url,app.getVersion(),variant,fetcher);
     if(request!==sequence)throw Error('Uma consulta mais recente foi iniciada.');
-    download=release.url;return {status:release.status,version:release.version,sha256:release.sha256};
+    download=release.status==='available'?release:null;return {status:release.status,version:release.version,sha256:release.sha256};
   });
   ipcMain.handle('updates:download',async event=>{
     assertTrustedSender(event,getWindow());
     if(!download)throw Error('Consulte a versão disponível primeiro.');
-    await shell.openExternal(download);
+    if(controller)throw Error('Download já em andamento.');
+    controller=new AbortController();verified=null;const selected=download;
+    try{
+      const file=await downloadVerified({release:selected,directory:require('node:path').join(app.getPath('userData'),'updates'),fetcher:(url,options)=>net.fetch(url,options),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15*60*1000)]),progress:data=>{const w=getWindow();if(w&&!w.isDestroyed())w.webContents.send('updates:progress',data);}});
+      verified={file,sha256:selected.sha256};return {status:'ready'};
+    }catch(error){throw Error(controller.signal.aborted?'Download cancelado.':error.message);}finally{controller=null;}
+
   });
+  ipcMain.handle('updates:cancel',event=>{assertTrustedSender(event,getWindow());controller?.abort();});
+  ipcMain.handle('updates:open',async event=>{
+    assertTrustedSender(event,getWindow());if(!verified)throw Error('Baixe e verifique uma atualização primeiro.');
+    if(await checksum(verified.file)!==verified.sha256){verified=null;throw Error('O arquivo foi alterado. Baixe novamente.');}
+    if(require('node:path').basename(verified.file).startsWith('MATTOZ-Portable-')){shell.showItemInFolder(verified.file);return {status:'revealed'};}
+    const error=await shell.openPath(verified.file);if(error)throw Error(error);
+  });
+  app.on?.('before-quit',()=>controller?.abort());
 }
 module.exports={checkRelease,checkGitHubRelease,registerUpdates};

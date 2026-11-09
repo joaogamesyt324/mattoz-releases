@@ -13,8 +13,10 @@ Abra [Releases](https://github.com/joaogamesyt324/mattoz-releases/releases).
 - **Portable**: abre sem instalar. Extraia um ZIP antes de executar, se aplicável.
 - **Setup**: instala no Windows e cria atalhos.
 
-O launcher da prévia 17 consulta este repositório. Ele abre o download no
-navegador; execute o arquivo baixado para atualizar. Dados da biblioteca ficam
+O launcher consulta este repositório. A partir da prévia 18, baixa a atualização
+com progresso e cancelamento, confere o SHA-256 e libera a abertura do instalador.
+Para o portátil, mostra o arquivo no Explorador; feche a versão antiga antes de
+abrir a nova. A prévia 17 ainda usa o navegador para chegar à 18. Dados da biblioteca ficam
 no perfil do usuário do Windows. Seus MP3s permanecem nas pastas originais.
 
 ## Desenvolver
