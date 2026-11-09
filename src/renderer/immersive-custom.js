@@ -1,0 +1,16 @@
+'use strict';
+(()=>{
+ const panel=document.getElementById('immersive'),el=MusicUI.element,D=MattozDisplay;
+ let prefs={...D.defaults},pending=Promise.resolve(),revision=0;
+ const controls=el('details','immersive-options'),summary=el('summary','','Personalizar'),body=el('div','immersive-options-body'),status=el('p','muted');status.setAttribute('role','status');controls.append(summary,body);panel.querySelector('.immersive-bar').after(controls);
+ const fields={};
+ for(const [key,label,options] of [['immersiveLayout','Visualização',[['vinyl','Capa e vinil'],['cover','Capa em destaque'],['lyrics','Capa e versos']]],['immersiveBackground','Fundo',[['album','Cor do álbum'],['plain','Neutro']]]]){const wrap=el('label','',label),select=el('select');for(const [value,name]of options){const opt=el('option','',name);opt.value=value;select.append(opt);}fields[key]=select;select.onchange=()=>save({[key]:select.value});wrap.append(select);body.append(wrap);}
+ for(const [key,label,min]of [['immersiveBrightness','Brilho do fundo',25],['immersiveCoverSize','Tamanho da capa',65]]){const wrap=el('label','',label),input=el('input'),output=el('output');input.type='range';input.min=min;input.max=100;input.step=1;input.setAttribute('aria-label',label);fields[key]=input;input.oninput=()=>{revision++;prefs[key]=Number(input.value);apply();};input.onchange=()=>save({[key]:Number(input.value)});input.afterOutput=output;wrap.append(input,output);body.append(wrap);}
+ const reset=el('button','','Restaurar visual padrão');reset.onclick=()=>save({...D.defaults});body.append(reset,status);
+ const verses=el('div','immersive-verses');verses.setAttribute('aria-label','Versos próximos');document.getElementById('large-lyric').after(verses);
+ function apply(){panel.dataset.layout=prefs.immersiveLayout;panel.dataset.background=prefs.immersiveBackground;panel.style.setProperty('--immersive-brightness',String(prefs.immersiveBrightness/100));panel.style.setProperty('--cover-scale',String(prefs.immersiveCoverSize/100));for(const [key,input]of Object.entries(fields)){input.value=prefs[key];if(input.afterOutput)input.afterOutput.textContent=prefs[key]+'%';}}
+ function save(patch){revision++;prefs={...prefs,...patch};apply();status.textContent='Salvando…';pending=pending.catch(()=>{}).then(()=>window.mattoz.savedAction('preferences',patch)).then(()=>{status.textContent='Visual salvo.';}).catch(()=>{status.textContent='Não foi possível salvar. Tente alterar a opção novamente.';});}
+ const token=revision;window.mattoz.savedAction('list').then(s=>{if(revision===token){prefs=D.normalize(s.preferences);apply();}}).catch(()=>{status.textContent='Usando visual padrão.';});apply();
+ let previous='';function syncVerses(){const active=document.querySelector('#lyric-lines .current-verse');const lines=active?[active.previousElementSibling?.textContent||'',active.textContent||'',active.nextElementSibling?.textContent||'']:['','A letra aparecerá aqui quando disponível.',''];const key=JSON.stringify(lines);if(key===previous)return;previous=key;verses.replaceChildren();lines.forEach((text,i)=>verses.append(el('p',i===1?'active':'context',text)));}
+ new MutationObserver(syncVerses).observe(document.getElementById('lyric-lines'),{subtree:true,childList:true,attributes:true,attributeFilter:['class']});syncVerses();
+})();

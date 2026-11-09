@@ -1,0 +1,27 @@
+'use strict';
+(()=>{
+ if(!window.mattoz.watchFolders)return;
+ const el=MusicUI.element,section=el('section','watch-section'),heading=el('h2','','Pastas monitoradas'),intro=el('p','muted','O MATTOZ verifica estas pastas a cada 30 segundos enquanto está aberto. Revise os MP3s encontrados antes de importar. Arquivos ainda em cópia aguardam uma nova verificação.'),toolbar=el('div','playlist-actions'),status=el('p','muted'),folders=el('div'),results=el('div','watch-results');
+ status.setAttribute('role','status');section.append(heading,intro,toolbar,status,folders,results);document.getElementById('settings').append(section);
+ const badge=el('button','text-button');badge.hidden=true;badge.onclick=()=>{document.querySelector('.sidebar [data-page="settings"]').click();section.scrollIntoView({block:'start'});};document.querySelector('.topbar').append(badge);
+ let state=null,busy=false,revision=0;const selected=new Set();
+ const button=(text,fn)=>{const b=el('button','',text);b.onclick=async()=>{if(busy)return;busy=true;section.inert=true;try{await fn();}catch(e){status.textContent=e.message;}finally{busy=false;section.inert=false;}};return b;};
+ async function refresh(action='list',data){const token=++revision;if(action!=='list')status.textContent='Verificando pastas…';const result=await window.mattoz.watchFolders(action,data);if(token!==revision)return;state=result;draw();}
+ toolbar.append(button('Escolher pasta',()=>refresh('add')),button('Verificar agora',()=>refresh('scan')));
+ function draw(){if(!state)return;badge.hidden=!state.pending.length;badge.textContent=`Novas músicas (${state.pending.length})`;folders.replaceChildren();results.replaceChildren();for(const folder of state.folders){const row=el('div','watch-folder'),label=el('div');label.append(el('strong','',folder.name),el('small','',folder.path));row.append(label,button(folder.enabled?'Pausar':'Retomar',()=>refresh('toggle',{id:folder.id})),button('Parar de monitorar',()=>refresh('remove',{id:folder.id})));folders.append(row);}if(!state.folders.length)folders.append(el('p','muted','Escolha uma pasta de músicas para começar.'));
+  const valid=new Set(state.pending.map(t=>t.id));for(const id of selected)if(!valid.has(id))selected.delete(id);
+  const message=state.pending.length?`${state.pending.length} MP3(s) aguardando sua revisão.`:'Nenhum MP3 novo pronto para importar.';status.textContent=message+(state.errors.length?' '+state.errors.join(' '):'');
+  if(!state.pending.length)return;const actions=el('div','playlist-actions'),all=button('Selecionar todas',()=>{state.pending.forEach(t=>selected.add(t.id));draw();}),none=button('Limpar seleção',()=>{selected.clear();draw();}),accept=button('Importar selecionadas',async()=>{const r=await window.mattoz.watchFolders('accept',{ids:[...selected]});selected.clear();await refresh();status.textContent=`${r.added} música(s) adicionada(s); ${r.skipped} item(ns) ignorado(s).`;});accept.disabled=!selected.size;actions.append(all,none,accept);results.append(actions);const list=el('div','watch-candidates');for(const item of state.pending){const label=el('label'),check=el('input');check.type='checkbox';check.checked=selected.has(item.id);check.onchange=()=>{if(check.checked)selected.add(item.id);else selected.delete(item.id);accept.disabled=!selected.size;};label.append(check,el('span','',`${state.folders.find(f=>f.id===item.folderId)?.name||''} / ${item.relative}`));list.append(label);}results.append(list);
+ }
+ const drop=el('div','import-drop-hint','Solte MP3s ou pastas para adicionar à biblioteca');drop.hidden=true;document.body.append(drop);let depth=0;
+ const isFile=e=>[...e.dataTransfer?.types||[]].includes('Files');
+ document.addEventListener('dragenter',e=>{if(isFile(e)){depth++;drop.hidden=false;}});
+ document.addEventListener('dragleave',e=>{if(isFile(e)&&--depth<=0){depth=0;drop.hidden=true;}});
+ document.addEventListener('dragover',e=>{if(isFile(e)){e.preventDefault();e.dataTransfer.dropEffect='copy';}});
+ document.addEventListener('drop',e=>{if(isFile(e)){e.preventDefault();depth=0;drop.hidden=true;}});
+ window.addEventListener('blur',()=>{depth=0;drop.hidden=true;});
+ const progress=el('div','import-progress');progress.hidden=true;progress.setAttribute('role','status');document.body.append(progress);let hide;
+ window.mattoz.onImportProgress(data=>{if(data.type==='discovery'){if(!busy)refresh().catch(()=>{});return;}clearTimeout(hide);progress.hidden=false;if(data.type==='scanning')progress.textContent='Localizando MP3s…';if(data.type==='progress')progress.textContent=`Importando músicas: ${data.done} de ${data.total}`;if(data.type==='complete'){progress.textContent=`${data.added} música(s) adicionada(s) · ${data.skipped} item(ns) ignorado(s).`;window.dispatchEvent(new Event('mattoz-library-changed'));if(!busy)refresh().catch(()=>{});hide=setTimeout(()=>{progress.hidden=true;},8000);}if(data.type==='error'){progress.textContent='Falha na importação: '+data.message;hide=setTimeout(()=>{progress.hidden=true;},12000);}});
+ const shortcut=el('button','text-button','Gerenciar pastas monitoradas');shortcut.onclick=()=>{document.querySelector('.sidebar [data-page="settings"]').click();section.scrollIntoView({block:'start'});};document.getElementById('library-message').after(shortcut);
+ window.addEventListener('mattoz-page',e=>{if(e.detail==='settings')refresh().catch(e=>{status.textContent=e.message;});});refresh().catch(e=>{status.textContent=e.message;});
+})();

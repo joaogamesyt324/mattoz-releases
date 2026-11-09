@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src mattoz-media:; media-src mattoz-media: data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'">
+  <title>MATTOZ MUSIC PLAYER</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+  <script src="queue.js" defer></script>
+  <script src="buffer-deck.js" defer></script><script src="audio-transport.js" defer></script>
+  <script src="player.js" defer></script><script src="lrc.js" defer></script><script src="lyrics.js" defer></script><script src="album-ui.js" defer></script>
+  <script src="library-ui.js" defer></script><script src="music-ui.js" defer></script><script src="saved-ui.js" defer></script><script src="home.js" defer></script><script src="listening.js" defer></script><script src="settings.js" defer></script><script src="now-playing.js" defer></script>
+<script src="sleep-timer.js" defer></script>
+<script src="phase7.js" defer></script>
+<script src="studio.js" defer></script>
+<script src="singles.js" defer></script>
+<script defer src="global-search.js"></script>
+<script defer src="vinyl-control.js"></script>
+<script defer src="display-options.js"></script>
+<script defer src="immersive-custom.js"></script>
+<script defer src="share-card.js"></script>
+<script defer src="import-ui.js"></script>
+<script defer src="equalizer.js"></script>
+<script defer src="desktop-ui.js"></script>
+<script defer src="animated-cover.js"></script>
+<script defer src="launcher.js"></script>
+<script defer src="track-fade.js"></script>
+<script defer src="personal-collection.js"></script>
+</head>
+<body>
+  <a class="skip" href="#content">Pular para o conteúdo</a>
+  <aside class="sidebar" aria-label="Menu principal">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">m.</span><div>MATTOZ<small>MUSIC PLAYER</small></div></div>
+    <p class="nav-label">SUA MÚSICA, SEU ESPAÇO</p>
+    <nav>
+      <button data-page="home" aria-current="page"><span aria-hidden="true">⌂</span>Início</button>
+      <button data-page="library"><span aria-hidden="true">▤</span>Sua biblioteca</button>
+      <button data-page="albums"><span aria-hidden="true">▣</span>Álbuns</button>
+      <button data-page="artists"><span aria-hidden="true">♧</span>Artistas</button>
+      <button data-page="playlists"><span aria-hidden="true">≡</span>Playlists</button>
+      <button data-page="recent"><span aria-hidden="true">◷</span>Recentes</button>
+    </nav>
+    <div class="sidebar-bottom"><div class="local-badge"><i></i> Feito para ouvir offline</div><button data-page="settings"><span aria-hidden="true">⚙</span>Configurações</button><small id="version">FASE 08</small></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span id="breadcrumb">Seu espaço / Início</span><span class="phase-badge">EM DESENVOLVIMENTO · FASE 9</span></header>
+    <main id="content" tabindex="-1">
+      <section id="home" class="page">
+        <div class="home-heading"><div><p class="eyebrow">SEU UNIVERSO MUSICAL</p><h1>O som da sua história.</h1><p>Reencontre favoritas. Dê play no próximo momento.</p></div><button class="primary" data-add-audio>＋ Abrir MP3s</button></div><div id="home-content"><p>Preparando sua coleção…</p></div>
+      </section>
+      <section id="library-page" class="page" hidden><p class="eyebrow">SUA COLEÇÃO LOCAL</p><h1 id="library-title">Biblioteca</h1><div class="library-toolbar"><button data-library="files" class="primary">Adicionar MP3s</button><button data-library="folder">Importar pasta</button><button data-library="refresh">Atualizar / buscar novas</button><input id="library-search" type="search" placeholder="Título, artista ou álbum" aria-label="Buscar na biblioteca"><select id="library-sort" aria-label="Ordenar"><option value="title">Título</option><option value="artist">Artista</option><option value="album">Álbum e faixa</option><option value="year">Ano</option></select></div><p id="library-message" role="status">Sua biblioteca é salva automaticamente neste computador.</p><div id="library-results"></div></section>
+      <section id="saved-page" class="page" hidden><h1 id="saved-title">Playlists</h1><div id="playlist-create"><input id="playlist-name" placeholder="Nome da playlist" maxlength="100"><button id="create-playlist" class="primary">Criar playlist</button></div><p id="saved-message" role="status"></p><div id="saved-results"></div></section>
+      <section id="collection" class="page" hidden>
+        <p class="eyebrow">SUA COLEÇÃO LOCAL</p><h1 id="collection-title">Sua biblioteca</h1>
+        <div class="collection-toolbar"><span>0 itens</span><label>Buscar músicas <input type="search" disabled placeholder="Disponível na Fase 4"></label></div>
+        <div class="empty-state"><span class="empty-symbol" aria-hidden="true">♫</span><h2 id="empty-title">Sua biblioteca começa aqui</h2><p id="empty-description"></p><button class="primary" id="future-action" disabled>Importar músicas · Fase 4</button><small>A biblioteca permanente chega na Fase 4. Para ouvir agora, use Abrir MP3s na tela Início.</small></div>
+      </section>
+      <section id="lyrics" class="page" hidden><p class="eyebrow">CADA VERSO, NO SEU TEMPO</p><h1 id="lyrics-title">Letras sincronizadas</h1><div class="lyric-tools"><button id="online-lyrics">Buscar letra online</button><button id="reload-lyrics">↻ Recarregar LRC</button><label>Atrasar letra (segundos) <input id="lyric-offset" type="number" min="-60" max="60" step="0.1" value="0"></label><button id="reset-offset">Zerar ajuste</button><label><input id="follow-lyrics" type="checkbox" checked> Acompanhar versos</label></div><p id="lyrics-status" role="status">Abra uma música para acompanhar a letra.</p><div id="online-results"></div><div id="lyric-lines" tabindex="0" aria-label="Letra da música"></div></section>
+      <section id="queue" class="page" hidden><p class="eyebrow">SUA SESSÃO DE MÚSICA</p><h1>Fila de reprodução</h1><div class="queue-toolbar"><button class="primary" data-add-audio>＋ Adicionar MP3s</button><span id="queue-count">0 faixas</span></div><p class="muted">A fila fica disponível enquanto o app está aberto. Importe pela biblioteca para ler metadados e capas.</p><div id="queue-list"></div></section>
+      <section id="settings" class="page" hidden><p class="eyebrow">SEU APLICATIVO</p><h1>Configurações</h1><div class="settings-grid"><div class="settings-card"><div><h2>Aparência</h2><p>Escolha o fundo e a cor de destaque.</p></div><div class="setting-controls"><label>Fundo <select id="pref-theme"><option value="charcoal">Carvão</option><option value="midnight">Meia-noite</option></select></label><label>Destaque <select id="pref-accent"><option value="lime">Lima</option><option value="violet">Violeta</option><option value="rose">Rosa</option></select></label></div></div><div class="settings-card"><div><h2>Letras</h2><p>Ajuste a leitura ao seu jeito de ouvir.</p></div><div class="setting-controls"><label>Tamanho <select id="pref-lyricSize"><option value="small">Compacto</option><option value="medium">Médio</option><option value="large">Grande</option></select></label><label>Movimento <select id="pref-motion"><option value="system">Seguir sistema</option><option value="reduced">Reduzido</option></select></label><label><input type="checkbox" id="pref-followLyrics" checked> Acompanhar versos automaticamente</label></div></div><div class="settings-card"><div><h2>Volume</h2><p>O último volume escolhido será usado na próxima abertura.</p></div><label class="volume-setting"><input id="pref-volume" aria-label="Volume salvo" type="range" min="0" max="100" value="70"><output id="pref-volume-value">70%</output></label></div><div class="settings-card"><div><h2>Sua coleção</h2><p>Importe pastas e busque novas músicas sem alterar os arquivos originais.</p></div><button data-page="library" class="primary">Gerenciar biblioteca</button></div></div><p id="settings-status" role="status">Suas escolhas ficam salvas neste computador.</p><div class="about"><h2>Sobre o MATTOZ</h2><p id="app-info">Verificando a conexão com o aplicativo…</p><p>Atalhos: Ctrl+1 início · Ctrl+2 biblioteca · Ctrl+, configurações · Ctrl+L letras.</p><p>Esta versão reproduz MP3s locais. A biblioteca, os metadados e a última sessão ficam salvos neste computador.</p></div></section>
+    </main>
+    <div id="status" role="status" aria-live="polite"></div>
+  </div>
+  <aside id="now-panel" hidden aria-label="Tocando agora"><div class="now-heading"><span>TOCANDO AGORA</span><button id="close-now" aria-label="Fechar painel">×</button></div><div id="side-art" class="now-art">♫</div><h2 id="side-title">Escolha uma música</h2><p id="side-artist">Sua coleção, seu momento.</p><div class="lyric-preview"><small>NESTE VERSO</small><p id="side-lyric">As letras aparecem aqui quando disponíveis.</p><button id="side-open-lyrics">Ver letra completa →</button></div><button id="side-expand" class="primary">Expandir música ⛶</button></aside>
+  <section id="immersive" hidden role="dialog" aria-modal="false" aria-label="Tela imersiva da música"><div class="immersive-bar"><span>MATTOZ / TOCANDO AGORA</span><div><button id="native-fullscreen" aria-pressed="false">Tela cheia ⛶</button><button id="close-immersive" aria-label="Voltar à biblioteca">Voltar ×</button></div></div><div class="immersive-body"><div class="record-presentation"><div id="large-art" class="now-art">♫</div><div id="playing-vinyl" class="playing-vinyl" aria-hidden="true"><div class="vinyl-grooves"><div id="vinyl-label" class="vinyl-label">m.</div></div></div></div><div class="immersive-info"><p class="eyebrow">SUA MÚSICA, EM PRIMEIRO PLANO</p><h1 id="large-title">Escolha uma música</h1><p id="large-artist">Abra seus MP3s para começar.</p><p id="large-album"></p><div class="immersive-verse" id="large-lyric"></div><button id="immersive-lyrics" class="text-button">Abrir letras sincronizadas →</button></div></div></section>
+  <audio crossorigin="anonymous" id="audio" preload="metadata"></audio>
+  <footer class="player" aria-label="Player de áudio">
+    <div class="now-playing"><div class="cover-placeholder" aria-hidden="true">♫</div><div><strong id="track-title">Sua próxima favorita</strong><small id="track-subtitle">Abra seus MP3s para começar</small></div></div>
+    <div class="transport"><div class="transport-buttons"><button id="shuffle" aria-label="Aleatório" aria-pressed="false" title="Aleatório">⤨</button><button id="previous" disabled aria-label="Faixa anterior">◀│</button><button id="play" class="play" disabled aria-label="Reproduzir">▶</button><button id="next" disabled aria-label="Próxima faixa">│▶</button><button id="repeat" aria-label="Repetição desativada" title="Repetição desativada">↻</button></div><div class="progress"><span id="elapsed">0:00</span><input id="seek" aria-label="Posição da reprodução" type="range" min="0" max="100" step="0.1" value="0" disabled><span id="duration">0:00</span></div></div>
+    <div class="player-tools"><button id="toggle-now" aria-label="Tocando agora" aria-pressed="false" title="Tocando agora">▣</button><button id="open-immersive" aria-label="Abrir tela imersiva" title="Tela imersiva">⛶</button><button data-page="lyrics" aria-label="Abrir letras" title="Letras — Ctrl+L">“</button><button data-page="queue" aria-label="Abrir fila" title="Fila">≡</button><button id="mute" aria-label="Silenciar" aria-pressed="false">♪</button><input id="volume" aria-label="Volume" type="range" min="0" max="100" value="70"></div>
+  </footer>
+</body>
+</html>

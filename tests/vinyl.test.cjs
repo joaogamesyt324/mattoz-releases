@@ -1,0 +1,3 @@
+const {test}=require('node:test'),assert=require('node:assert/strict');const {delta,position}=require('../src/renderer/vinyl-control');
+test('vinyl crosses angle boundary without time jump in either direction',()=>{const rad=d=>d*Math.PI/180;assert.ok(Math.abs(delta(rad(179),rad(-179))-rad(2))<1e-9);assert.ok(Math.abs(delta(rad(-179),rad(179))+rad(2))<1e-9);});
+test('vinyl advances clockwise, rewinds counterclockwise and clamps endpoints',()=>{assert.equal(position(10,Math.PI*2,120),40);assert.ok(Math.abs(position(60,-Math.PI*2,120)-30)<1e-9);assert.equal(position(1,-Math.PI,120),0);assert.equal(position(119,Math.PI,120),120);});

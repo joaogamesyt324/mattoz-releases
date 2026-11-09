@@ -1,0 +1,2 @@
+function addListening(previous,id,seconds,day){if(typeof id!=='string'||typeof seconds!=='number'||!Number.isFinite(seconds)||seconds<=0||seconds>15)throw new Error('Tempo inválido');const next=structuredClone(previous||{total:0,tracks:{},days:{}});next.months||={};const month=day.slice(0,7);next.months[month]||={};next.months[month][id]=(next.months[month][id]||0)+seconds;next.total+=seconds;next.tracks[id]=(next.tracks[id]||0)+seconds;next.days[day]=(next.days[day]||0)+seconds;return next;}
+module.exports={addListening};

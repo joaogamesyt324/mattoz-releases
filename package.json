@@ -1,0 +1,58 @@
+{
+  "name": "mattoz-music-player",
+  "productName": "MATTOZ MUSIC PLAYER",
+  "version": "0.9.0-preview.17",
+  "description": "MATTOZ — Fase 9 em desenvolvimento",
+  "private": true,
+  "main": "src/main/main.cjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "check": "node scripts/check-syntax.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "dist:win": "node scripts/clean-installer.cjs && node scripts/build-windows.cjs && node scripts/check-installer.cjs && node scripts/check-installer.cjs --portable && node scripts/write-release.cjs"
+  },
+  "devDependencies": {
+    "electron": "45.2.1",
+    "electron-builder": "26.18.0",
+    "jsdom": "26.1.0"
+  },
+  "dependencies": {
+    "music-metadata": "12.3.3",
+    "semver": "7.8.5"
+  },
+  "build": {
+    "appId": "com.mattoz.musicplayer",
+    "productName": "MATTOZ MUSIC PLAYER",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "package.json",
+      "build/icon.png",
+      "build/controls/*.png"
+    ],
+    "asar": true,
+    "win": {
+      "target": "nsis",
+      "signAndEditExecutable": false,
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "script": "build/installer.nsi",
+      "installerLanguages": [
+        "pt_BR"
+      ],
+      "useZip": true,
+      "differentialPackage": false
+    },
+    "artifactName": "MATTOZ-Setup-${version}-${arch}.${ext}"
+  }
+}

@@ -1,0 +1,7 @@
+async function coverAction(action,data,{library,save,fetcher}){
+const t=library.tracks.get(data.id);if(!t)throw Error('Faixa inválida');
+const request=async url=>{const r=await fetcher(url,{headers:{'User-Agent':'MATTOZ/0.7.1 (personal music collection)'},signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('Serviço de capas respondeu HTTP '+r.status);return r;};
+if(action==='cover:search'){const clean=s=>String(s||'').replace(/[\\"():]/g,' ').slice(0,200);const u=new URL('https://musicbrainz.org/ws/2/release-group/');u.searchParams.set('query','releasegroup:"'+clean(t.album)+'" AND artist:"'+clean(t.albumArtist||t.artist)+'"');u.searchParams.set('fmt','json');u.searchParams.set('limit','5');const json=await (await request(u.href)).json();return (json['release-groups']||[]).map(r=>({id:r.id,title:r.title,artist:(r['artist-credit']||[]).map(a=>a.name).join(', ')}));}
+if(!/^[a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12}$/i.test(data.release))throw Error('Capa inválida');const r=await request('https://coverartarchive.org/release-group/'+data.release+'/front-500');const chunks=[];let size=0;for await(const chunk of r.body){size+=chunk.length;if(size>5*1024*1024)throw Error('Imagem muito grande');chunks.push(chunk);}const bytes=Buffer.concat(chunks),png=bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));if(!png&&!(bytes[0]===255&&bytes[1]===216))throw Error('Formato de capa não suportado');t.artwork='data:image/'+(png?'png':'jpeg')+';base64,'+bytes.toString('base64');t.customArtwork=t.artwork;save();return t;
+}
+module.exports={coverAction};

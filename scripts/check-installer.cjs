@@ -1,0 +1,15 @@
+'use strict';
+const fs=require('node:fs');
+const file=process.argv[2]==="--portable" ? `dist/MATTOZ-Portable-${require("../package.json").version}-x64.exe` : process.argv[2]||`dist/MATTOZ-Setup-${require('../package.json').version}-x64.exe`;
+const data=fs.readFileSync(file);
+const signature=Buffer.from('efbeadde4e756c6c736f6674496e7374','hex');
+const start=data.indexOf(signature)-4;
+if(start<512||start%512)throw Error('Cabeçalho NSIS inválido');
+const end=start+data.readUInt32LE(start+24);
+if(end!==data.length)throw Error(`Instalador incompleto: esperado ${end} bytes; recebido ${data.length}`);
+const table=Array.from({length:256},(_,n)=>{for(let k=0;k<8;k++)n=n&1?0xedb88320^(n>>>1):n>>>1;return n>>>0;});
+let crc=0xffffffff;
+for(let i=512;i<end-4;i++)crc=table[(crc^data[i])&255]^(crc>>>8);
+crc=(crc^0xffffffff)>>>0;
+if(crc!==data.readUInt32LE(end-4))throw Error('CRC interno do instalador inválido');
+console.log(`Integridade NSIS confirmada: ${data.length} bytes; CRC ${crc.toString(16)}`);
