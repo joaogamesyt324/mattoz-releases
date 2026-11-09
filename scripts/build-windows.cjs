@@ -4,9 +4,9 @@ const {build,Platform,Arch}=require('electron-builder');
 const targets=()=>Platform.WINDOWS.createTarget(['nsis'],Arch.x64);
 async function main(){
   const prepackaged=path.resolve('dist/win-unpacked');
-  if(!process.argv.includes('--prepackaged'))await build({targets:Platform.WINDOWS.createTarget(['dir'],Arch.x64)});
-  await build({targets:targets(),prepackaged});
-  await build({
+  if(!process.argv.includes('--prepackaged'))await build({publish:'never',targets:Platform.WINDOWS.createTarget(['dir'],Arch.x64)});
+  await build({publish:'never',targets:targets(),prepackaged});
+  await build({publish:'never',
     targets:targets(),
     prepackaged:path.resolve('dist/win-unpacked'),
     config:{artifactName:'MATTOZ-Portable-${version}-${arch}.${ext}',nsis:{script:'build/portable.nsi'}}

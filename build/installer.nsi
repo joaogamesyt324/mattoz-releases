@@ -26,7 +26,11 @@ FunctionEnd
 Section "MATTOZ"
   SetShellVarContext current
   SetOutPath "$INSTDIR\app"
+!ifdef NSIS_WIN32_MAKENSIS
+  File /r /x ".*" "${PROJECT_DIR}\dist\win-unpacked\*"
+!else
   File /r /x ".*" "${PROJECT_DIR}/dist/win-unpacked/*"
+!endif
   SetOutPath "$INSTDIR"
   File "${BUILD_RESOURCES_DIR}/icon.ico"
   WriteUninstaller "$INSTDIR\Desinstalar.exe"

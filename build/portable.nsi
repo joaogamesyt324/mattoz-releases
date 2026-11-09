@@ -10,7 +10,11 @@ Icon "${BUILD_RESOURCES_DIR}/icon.ico"
 Section
   InitPluginsDir
   SetOutPath "$PLUGINSDIR\app"
+!ifdef NSIS_WIN32_MAKENSIS
+  File /r /x ".*" "${PROJECT_DIR}\dist\win-unpacked\*"
+!else
   File /r /x ".*" "${PROJECT_DIR}/dist/win-unpacked/*"
+!endif
   System::Call 'Kernel32::SetEnvironmentVariable(t "PORTABLE_EXECUTABLE_DIR", t "$EXEDIR")'
   ${GetParameters} $0
   ExecWait '"$PLUGINSDIR\app\MATTOZ MUSIC PLAYER.exe" $0' $1
