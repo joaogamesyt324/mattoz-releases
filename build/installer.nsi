@@ -1,4 +1,9 @@
 Unicode true
+!ifdef NSIS_WIN32_MAKENSIS
+  !define MATTOZ_ICON "${BUILD_RESOURCES_DIR}\icon.ico"
+!else
+  !define MATTOZ_ICON "${BUILD_RESOURCES_DIR}/icon.ico"
+!endif
 CRCCheck force
 SetCompressor zlib
 !include "MUI2.nsh"
@@ -7,8 +12,8 @@ Name "MATTOZ MUSIC PLAYER"
 InstallDir "$LOCALAPPDATA\Programs\MATTOZ Music Player"
 RequestExecutionLevel user
 !define MUI_ABORTWARNING
-!define /redef MUI_ICON "${BUILD_RESOURCES_DIR}/icon.ico"
-!define /redef MUI_UNICON "${BUILD_RESOURCES_DIR}/icon.ico"
+!define /redef MUI_ICON "${MATTOZ_ICON}"
+!define /redef MUI_UNICON "${MATTOZ_ICON}"
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -32,7 +37,7 @@ Section "MATTOZ"
   File /r /x ".*" "${PROJECT_DIR}/dist/win-unpacked/*"
 !endif
   SetOutPath "$INSTDIR"
-  File "${BUILD_RESOURCES_DIR}/icon.ico"
+  File "${MATTOZ_ICON}"
   WriteUninstaller "$INSTDIR\Desinstalar.exe"
   CreateShortcut "$DESKTOP\MATTOZ Music Player.lnk" "$INSTDIR\app\MATTOZ MUSIC PLAYER.exe" "" "$INSTDIR\icon.ico"
   CreateShortcut "$SMPROGRAMS\MATTOZ Music Player.lnk" "$INSTDIR\app\MATTOZ MUSIC PLAYER.exe" "" "$INSTDIR\icon.ico"

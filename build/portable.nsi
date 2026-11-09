@@ -1,11 +1,16 @@
 Unicode true
+!ifdef NSIS_WIN32_MAKENSIS
+  !define MATTOZ_ICON "${BUILD_RESOURCES_DIR}\icon.ico"
+!else
+  !define MATTOZ_ICON "${BUILD_RESOURCES_DIR}/icon.ico"
+!endif
 CRCCheck force
 SetCompressor zlib
 RequestExecutionLevel user
 SilentInstall silent
 AutoCloseWindow true
 Name "MATTOZ Music Player Portátil"
-Icon "${BUILD_RESOURCES_DIR}/icon.ico"
+Icon "${MATTOZ_ICON}"
 !include "FileFunc.nsh"
 Section
   InitPluginsDir
