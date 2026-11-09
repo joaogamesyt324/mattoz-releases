@@ -19,10 +19,14 @@ test('publishing refuses forks, PRs, mismatched lockfiles and orphaned tags',asy
  fs.writeFileSync(path.join(f.root,'package-lock.json'),'{}');await assert.rejects(publish(f),/divergentes/);
 }finally{f.cleanup();}});
 test('a preview publishes only after every draft asset is uploaded',async()=>{const f=fixture(),calls=[];let gets=0;try{
- const r=await publish({...f,fetcher:async()=>{if(++gets<=2)return response({},404);return response({draft:true,assets:fs.readdirSync(path.join(f.root,'dist')).map(name=>({name,state:'uploaded',size:fs.statSync(path.join(f.root,'dist',name)).size}))});},run:async args=>calls.push(args)});
- assert.equal(r.status,'published');assert.equal(calls.length,2);assert.ok(calls[0].includes('--draft'));assert.ok(calls[0].includes('--prerelease'));assert.ok(calls[1].includes('--draft=false'));
+ const r=await publish({...f,fetcher:async()=>{if(++gets<=3)return response({},404);return response([{id:1,tag_name:'v'+version,draft:true,assets:fs.readdirSync(path.join(f.root,'dist')).map(name=>({name,state:'uploaded',size:fs.statSync(path.join(f.root,'dist',name)).size}))}]);},run:async args=>calls.push(args)});
+ assert.equal(r.status,'published');assert.equal(calls.length,2);assert.ok(calls[0].includes('--draft'));assert.ok(calls[0].includes('--prerelease'));assert.ok(calls[1].includes('draft=false'));
 }finally{f.cleanup();}});
 test('upload failures or missing assets never publish the draft',async()=>{for(const fail of [true,false]){const f=fixture();let calls=0,gets=0;try{
- await assert.rejects(publish({...f,fetcher:async()=>++gets<=2?response({},404):response({draft:true,assets:[]}),run:async()=>{calls++;if(fail)throw Error('upload failed');}}));assert.equal(calls,1);
+ await assert.rejects(publish({...f,fetcher:async()=>++gets<=3?response({},404):response([{id:1,tag_name:'v'+version,draft:true,assets:[]}]),run:async()=>{calls++;if(fail)throw Error('upload failed');}}));assert.equal(calls,1);
 }finally{f.cleanup();}}});
 test('corrupted build files stop before uploading',async()=>{const f=fixture();try{fs.writeFileSync(path.join(f.root,'dist',`MATTOZ-Portable-${version}-x64.exe`),'corrupt');await assert.rejects(publish({...f,fetcher:async()=>response({},404),run:()=>assert.fail()}),/SHA-256/);}finally{f.cleanup();}});
+test('an existing draft resumes upload and publishes by release ID',async()=>{const f=fixture(),calls=[];try{
+ const result=await publish({...f,fetcher:async url=>url.includes('/releases?')?response([{id:42,tag_name:'v'+version,draft:true,assets:fs.readdirSync(path.join(f.root,'dist')).map(name=>({name,state:'uploaded',size:fs.statSync(path.join(f.root,'dist',name)).size}))}]):response({},404),run:async args=>calls.push(args)});
+ assert.equal(result.status,'published');assert.equal(calls[0][1],'upload');assert.ok(calls[0].includes('--clobber'));assert.ok(calls[1].includes('repos/joaogamesyt324/mattoz-releases/releases/42'));
+}finally{f.cleanup();}});

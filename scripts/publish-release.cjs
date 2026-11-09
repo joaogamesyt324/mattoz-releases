@@ -21,11 +21,13 @@ async function publish({root=path.resolve(__dirname,'..'),env=process.env,fetche
     return response.json();
   }
   const existing=await get('/releases/tags/'+tag);
+  const drafts=await get('/releases?per_page=100');
+  let draft=Array.isArray(drafts)?drafts.find(r=>r.draft&&r.tag_name===tag):null;
   if(existing){
     if(existing.draft)throw Error('Já existe um rascunho desta versão. Revise-o antes de publicar novamente.');
     console.log(tag+' já publicada; os arquivos existentes foram preservados.');return {status:'existing',tag};
   }
-  if(await get('/git/ref/tags/'+tag))throw Error('Tag já existente sem release. Use um novo número de versão para preservar o histórico.');
+  if(!draft&&await get('/git/ref/tags/'+tag))throw Error('Tag já existente sem release. Use um novo número de versão para preservar o histórico.');
   const manifest=JSON.parse(fs.readFileSync(path.join(root,'dist/release.json'),'utf8'));
   if(manifest.product!=='mattoz-music-player'||manifest.version!==version)throw Error('Manifesto não corresponde à versão.');
   const files=[],checksums=[];
@@ -44,14 +46,15 @@ async function publish({root=path.resolve(__dirname,'..'),env=process.env,fetche
   const args=['release','create',tag,...files,'--repo',repository,'--target',env.GITHUB_SHA,'--title','MATTOZ Music Player — '+version,'--notes-file',notes,'--draft'];
   if(semver.prerelease(version))args.push('--prerelease');
   // If any upload fails, gh exits nonzero and the release stays a draft.
-  await run(args);
-  const draft=await get('/releases/tags/'+tag);
+  if(draft){await run(['release','upload',tag,...files,'--repo',repository,'--clobber']);}else{await run(args);}
+  const releases=await get('/releases?per_page=100');
+  draft=Array.isArray(releases)?releases.find(r=>r.draft&&r.tag_name===tag):null;
   if(!draft?.draft)throw Error('Rascunho não confirmado; publicação interrompida.');
   for(const file of files){
     const asset=draft.assets?.find(a=>a.name===path.basename(file));
     if(!asset||asset.state!=='uploaded'||asset.size!==fs.statSync(file).size)throw Error('Upload incompleto; release mantida em rascunho.');
   }
-  await run(['release','edit',tag,'--repo',repository,'--draft=false',...(semver.prerelease(version)?['--latest=false']:[])]);
+  await run(['api','--method','PATCH',`repos/${repository}/releases/${draft.id}`,'-F','draft=false','-f','target_commitish='+env.GITHUB_SHA,...(semver.prerelease(version)?['-f','make_latest=false']:[])]);
   console.log('Publicada: https://github.com/'+repository+'/releases/tag/'+tag);
   return {status:'published',tag};
 }
